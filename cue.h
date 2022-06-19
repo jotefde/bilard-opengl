@@ -1,7 +1,7 @@
 #pragma once
 #include "mesh.h"
 
-class Ball
+class Cue
 {
 public:
 	//movement
@@ -12,8 +12,8 @@ public:
 
 	static Mesh* GetMesh();
 	static ShaderProgram* GetShader();
-	Ball(float, float);
-	Ball(glm::vec2);
+	Cue(float, float);
+	Cue(glm::vec2);
 	glm::mat4 Render(glm::mat4, glm::mat4, glm::mat4);
 	static const glm::vec4 colors[15];
 	void move(float x, float y);

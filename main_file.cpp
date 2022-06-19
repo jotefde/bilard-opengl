@@ -37,13 +37,17 @@ Place, Fifth Floor, Boston, MA  02110 - 1301  USA
 #include <table.h>
 #include <ball.h>
 #include "main_file.h"
+#include <cue.h>
 
 float speed_x = 0;
 float speed_y = 0;
 float speed_z = 10;
 float aspectRatio = 1;
+float cue_speed = 0;
+float cue_angle = 0;
 
-Table* tableMesh;
+Table* table;
+Cue* cue;
 std::vector<Ball*> balls;
 
 //Procedura obsługi błędów
@@ -53,16 +57,27 @@ void error_callback(int error, const char* description) {
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	if (action == GLFW_PRESS) {
+		if (key == GLFW_KEY_SPACE) {
+			balls[0]->position = glm::vec3(0);
+			balls[0]->speed = glm::vec2(0);
+		}
 		if (key == GLFW_KEY_LEFT) speed_x = -PI / 2;
 		if (key == GLFW_KEY_RIGHT) speed_x = PI / 2;
 		if (key == GLFW_KEY_UP) speed_y = PI / 2;
 		if (key == GLFW_KEY_DOWN) speed_y = -PI / 2;
+		if (key == GLFW_KEY_A) {
+			cue_speed = PI / 2;
+		}
+		if (key == GLFW_KEY_S) {
+			balls[0]->acceleration = glm::vec2(cosf(cue_angle) * 0.1f, sinf(cue_angle) * 0.1f);
+		}
 	}
 	if (action == GLFW_RELEASE) {
 		if (key == GLFW_KEY_LEFT) speed_x = 0;
 		if (key == GLFW_KEY_RIGHT) speed_x = 0;
 		if (key == GLFW_KEY_UP) speed_y = 0;
 		if (key == GLFW_KEY_DOWN) speed_y = 0;
+		if (key == GLFW_KEY_A) cue_speed = 0;
 	}
 }
 
@@ -103,8 +118,6 @@ GLuint readTexture(const char* filename) {
 
 void draw3Daxis() {
 	glColor3f(1.0, 0.0, 0.0); // red x
-	glDisable(GL_TEXTURE_2D);
-	glDisable(GL_LIGHTING);
 	glBegin(GL_LINES);
 	// x axis
 
@@ -151,6 +164,19 @@ void draw3Daxis() {
 	glFlush();
 }
 
+//void drawCueArrow() {
+//	glClearStencil(GL_STENCIL_CLEAR_VALUE);
+//	glColor3f(1.0, 0.0, 0.0);
+//	glBegin(GL_LINES);
+//
+//	glVertex3f(balls[0]->position.x, balls[0]->position.y, 0.0f);
+//	glVertex3f(balls[0]->position.x + cosf(cue_angle) * 3.0f, balls[0]->position.y + sinf(cue_angle) * 3.0f, 0.0f);
+//
+//	glEnd();
+//	glFlush();
+//}
+
+
 //Procedura inicjująca
 void initOpenGLProgram(GLFWwindow* window) {
 	//************Tutaj umieszczaj kod, który należy wykonać raz, na początku programu************
@@ -168,16 +194,19 @@ void initOpenGLProgram(GLFWwindow* window) {
 	Table::GetMesh();
 	Ball::GetMesh();
 
-	tableMesh = new Table();
-	balls.push_back(new Ball(0, 6.0f, 0));
+	table = new Table();
+	cue = new Cue(0, 0);
+	balls.push_back(new Ball(0, 6.0f));
 
-	Position newPos(0);
+
+	glm::vec2 newPos(0);
 	int row = 1,
 		col = 1;
 	for (int i = 1; i <= 15; i++)
-	{
-		newPos.Y = -row;
-		newPos.X = -float(row - 1) / 2.0f + col;
+	{	
+		float spacing = 0.1f * col;
+		newPos.y = -row;
+		newPos.x = ( - float(row - 1) / 2.0f + col) - 1.0f + spacing/2;
 		Ball* ball = new Ball(newPos);
 		ball->color = Ball::colors[i - 1];
 		balls.push_back(ball);
@@ -196,51 +225,6 @@ void freeOpenGLProgram(GLFWwindow* window) {
 	//************Tutaj umieszczaj kod, który należy wykonać po zakończeniu pętli głównej************
 }
 
-void square(float r, float g, float b) {
-	glColor3f(r, g, b);
-	glBegin(GL_TRIANGLE_FAN);
-	glVertex3f(-0.5, -0.5, 0.5);
-	glVertex3f(0.5, -0.5, 0.5);
-	glVertex3f(0.5, 0.5, 0.5);
-	glVertex3f(-0.5, 0.5, 0.5);
-	glEnd();
-}
-
-void cube(float size) {  // draws a cube with side length = size
-
-	glPushMatrix();  // Save a copy of the current matrix.
-	glScalef(size, size, size); // scale unit cube to desired size
-
-	square(1, 0, 0); // red front face
-
-	glPushMatrix();
-	glRotatef(90, 0, 1, 0);
-	square(0, 1, 0); // green right face
-	glPopMatrix();
-
-	glPushMatrix();
-	glRotatef(-90, 1, 0, 0);
-	square(0, 0, 1); // blue top face
-	glPopMatrix();
-
-	glPushMatrix();
-	glRotatef(180, 0, 1, 0);
-	square(0, 1, 1); // cyan back face
-	glPopMatrix();
-
-	glPushMatrix();
-	glRotatef(-90, 0, 1, 0);
-	square(1, 0, 1); // magenta left face
-	glPopMatrix();
-
-	glPushMatrix();
-	glRotatef(90, 1, 0, 0);
-	square(1, 1, 0); // yellow bottom face
-	glPopMatrix();
-
-	glPopMatrix(); // Restore matrix to its state before cube() was called.
-}
-
 //Procedura rysująca zawartość sceny
 void drawScene(GLFWwindow* window, float angle_x, float angle_y) {
 	//************Tutaj umieszczaj kod rysujący obraz******************l
@@ -248,9 +232,9 @@ void drawScene(GLFWwindow* window, float angle_x, float angle_y) {
 
 	float distance = 20.0f;
 
-	float camX = distance * -sinf(angle_x * PI / 4) * cosf((angle_y)*PI / 4);
-	float camY = distance * -sinf((angle_y)*PI / 4);
-	float camZ = -distance * cosf((angle_x)*PI / 4) * cosf((angle_y)*PI / 4);
+	float camX = distance * -sinf(angle_x * PI / 4) * cosf(angle_y*PI / 4);
+	float camY = distance * -sinf(angle_y*PI / 4);
+	float camZ = -distance * cosf(angle_x*PI / 4) * cosf(angle_y*PI / 4);
 
 	glm::mat4 V = glm::lookAt(
 		glm::vec3(camX, camY, camZ + speed_z),
@@ -264,13 +248,22 @@ void drawScene(GLFWwindow* window, float angle_x, float angle_y) {
 	//M = glm::rotate(M, angle_x, glm::vec3(0, 1.0f, 0)); //Wylicz macierz modelu
 	//M = glm::rotate(M, angle_y, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
 	glColor3f(0.0, 1.0, 0.0);
-	glm::mat4 tableM = tableMesh->Render(V, P, M);
+	glm::mat4 tableM = table->Render(V, P, M);
 
+
+
+	int time = glfwGetTime();
+	int frame = 1000 / 30;
+	cue->Render(V, P, M);
+	cue->position = balls[0]->position + glm::vec2(cosf(cue_angle),sinf(cue_angle));
 	for (Ball* ball : balls) {
-		ball->Render(V, P, M);
+		if(time%frame == 0)
+			ball->update();
+		glm::mat4  ballM = ball->Render(V, P, M);
 	}
 
 	draw3Daxis();
+	//drawCueArrow();
 	//cube(10.0f);
 	glUseProgram(0); // use default shader program
 	glfwSwapBuffers(window); //Przerzuć tylny bufor na przedni
@@ -309,7 +302,7 @@ int main(void)
 
 	//Główna pętla
 	float angle_x = 0; //Aktualny kąt obrotu obiektu
-	float angle_y = -4; //Aktualny kąt obrotu obiektu
+	float angle_y = -4.0f; //Aktualny kąt obrotu obiektu
 	glfwSetTime(0); //Zeruj timer
 	windowResizeCallback(window, 1280, 720);
 	double lastTime = glfwGetTime();
@@ -318,6 +311,8 @@ int main(void)
 	{
 		angle_x += speed_x * glfwGetTime(); //Zwiększ/zmniejsz kąt obrotu na podstawie prędkości i czasu jaki upłynał od poprzedniej klatki
 		angle_y += speed_y * glfwGetTime(); //Zwiększ/zmniejsz kąt obrotu na podstawie prędkości i czasu jaki upłynał od poprzedniej klatki
+		cue_angle += cue_speed * glfwGetTime();
+		std::cout << cue_angle << std::endl;
 		glfwSetTime(0); //Zeruj timer
 		drawScene(window, angle_x, angle_y); //Wykonaj procedurę rysującą
 		glfwPollEvents(); //Wykonaj procedury callback w zalezności od zdarzeń jakie zaszły.

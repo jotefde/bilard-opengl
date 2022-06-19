@@ -36,21 +36,20 @@ ShaderProgram* Ball::GetShader()
 	return _shader;
 }
 
-Ball::Ball(float x = 0, float y = 0, float z = 0)
+Ball::Ball(float x = 0, float y = 0)
 {
-	position = Position(x, y, z);
+	position = glm::vec2(x, y);
 }
 
-Ball::Ball(Position pos)
+Ball::Ball(glm::vec2 pos)
 {
 	position = pos;
 }
 
 glm::mat4 Ball::Render(glm::mat4 V, glm::mat4 P, glm::mat4 M)
 {
-	M = glm::translate(M, glm::vec3(this->position.X, this->position.Y, this->position.Z));
+	M = glm::translate(M, glm::vec3(this->position, 0));
 	M = glm::scale(M, glm::vec3(0.5f));
-
 	ShaderProgram* sp = Ball::GetShader();
 	Mesh* mesh = Ball::GetMesh();
 	sp->use();
@@ -75,4 +74,21 @@ glm::mat4 Ball::Render(glm::mat4 V, glm::mat4 P, glm::mat4 M)
 	glDisableVertexAttribArray(sp->a("normal"));
 	glDisableVertexAttribArray(sp->a("texCoord0"));
 	return M;
+}
+
+void Ball::move(float x, float y)
+{
+	this->acceleration += glm::vec2(x,y);
+}
+
+void Ball::update()
+{
+	this->speed += this->acceleration;
+
+	this->position += this->speed;
+
+	this->speed *= 0.995f;
+	this->acceleration = glm::vec2(0);
+	if (glm::length(this->speed) < 0.0001)
+		this->speed = glm::vec2(0);
 }

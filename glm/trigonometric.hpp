@@ -58,7 +58,7 @@ namespace glm
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/sin.xml">GLSL sin man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.1 Angle and Trigonometry Functions</a>
 	template<length_t L, typename T, qualifier Q>
-	GLM_FUNC_DECL vec<L, T, Q> sin(vec<L, T, Q> const& angle);
+	GLM_FUNC_DECL vec<L, T, Q> sin(vec<L, T, Q> const& cue_angle);
 
 	/// The standard trigonometric cosine function.
 	/// The values returned by this function will range from [-1, 1].
@@ -70,7 +70,7 @@ namespace glm
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/cos.xml">GLSL cos man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.1 Angle and Trigonometry Functions</a>
 	template<length_t L, typename T, qualifier Q>
-	GLM_FUNC_DECL vec<L, T, Q> cos(vec<L, T, Q> const& angle);
+	GLM_FUNC_DECL vec<L, T, Q> cos(vec<L, T, Q> const& cue_angle);
 
 	/// The standard trigonometric tangent function.
 	///
@@ -81,7 +81,7 @@ namespace glm
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/tan.xml">GLSL tan man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.1 Angle and Trigonometry Functions</a>
 	template<length_t L, typename T, qualifier Q>
-	GLM_FUNC_DECL vec<L, T, Q> tan(vec<L, T, Q> const& angle);
+	GLM_FUNC_DECL vec<L, T, Q> tan(vec<L, T, Q> const& cue_angle);
 
 	/// Arc sine. Returns an angle whose sine is x.
 	/// The range of values returned by this function is [-PI/2, PI/2].
@@ -145,7 +145,7 @@ namespace glm
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/sinh.xml">GLSL sinh man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.1 Angle and Trigonometry Functions</a>
 	template<length_t L, typename T, qualifier Q>
-	GLM_FUNC_DECL vec<L, T, Q> sinh(vec<L, T, Q> const& angle);
+	GLM_FUNC_DECL vec<L, T, Q> sinh(vec<L, T, Q> const& cue_angle);
 
 	/// Returns the hyperbolic cosine function, (exp(x) + exp(-x)) / 2
 	///
@@ -156,7 +156,7 @@ namespace glm
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/cosh.xml">GLSL cosh man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.1 Angle and Trigonometry Functions</a>
 	template<length_t L, typename T, qualifier Q>
-	GLM_FUNC_DECL vec<L, T, Q> cosh(vec<L, T, Q> const& angle);
+	GLM_FUNC_DECL vec<L, T, Q> cosh(vec<L, T, Q> const& cue_angle);
 
 	/// Returns the hyperbolic tangent function, sinh(angle) / cosh(angle)
 	///
@@ -167,7 +167,7 @@ namespace glm
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/tanh.xml">GLSL tanh man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.1 Angle and Trigonometry Functions</a>
 	template<length_t L, typename T, qualifier Q>
-	GLM_FUNC_DECL vec<L, T, Q> tanh(vec<L, T, Q> const& angle);
+	GLM_FUNC_DECL vec<L, T, Q> tanh(vec<L, T, Q> const& cue_angle);
 
 	/// Arc hyperbolic sine; returns the inverse of sinh.
 	///

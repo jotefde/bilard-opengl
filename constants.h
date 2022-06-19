@@ -22,23 +22,4 @@ Place, Fifth Floor, Boston, MA  02110 - 1301  USA
 
 const float PI = 3.141592653589793f;
 
-class Position
-{
-public:
-	float X = 0;
-	float Y = 0;
-	float Z = 0;
-	Position() {}
-	Position(float x, float y, float z)
-	{
-		X = x;
-		Y = y;
-		Z = z;
-	}
-	Position(float xyz)
-	{
-		X = Y = Z = xyz;
-	}
-};
-
 #endif

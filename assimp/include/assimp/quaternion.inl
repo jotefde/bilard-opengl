@@ -162,12 +162,12 @@ inline aiMatrix3x3t<TReal> aiQuaterniont<TReal>::GetMatrix() const
 // ---------------------------------------------------------------------------
 // Construction from an axis-angle pair
 template<typename TReal>
-inline aiQuaterniont<TReal>::aiQuaterniont( aiVector3t<TReal> axis, TReal angle)
+inline aiQuaterniont<TReal>::aiQuaterniont( aiVector3t<TReal> axis, TReal cue_angle)
 {
     axis.Normalize();
 
-    const TReal sin_a = std::sin( angle / 2 );
-    const TReal cos_a = std::cos( angle / 2 );
+    const TReal sin_a = std::sin( cue_angle / 2 );
+    const TReal cos_a = std::cos( cue_angle / 2 );
     x    = axis.x * sin_a;
     y    = axis.y * sin_a;
     z    = axis.z * sin_a;

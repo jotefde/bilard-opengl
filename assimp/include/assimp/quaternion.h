@@ -71,7 +71,7 @@ public:
     aiQuaterniont( TReal rotx, TReal roty, TReal rotz);
 
     /** Construct from an axis-angle pair */
-    aiQuaterniont( aiVector3t<TReal> axis, TReal angle);
+    aiQuaterniont( aiVector3t<TReal> axis, TReal cue_angle);
 
     /** Construct from a normalized quaternion stored in a vec3 */
     explicit aiQuaterniont( aiVector3t<TReal> normalized);

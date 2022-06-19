@@ -20,8 +20,8 @@ namespace glm
 		else
 		{
 			// Essential Mathematics, page 467
-			T angle = acos(cosTheta);
-			return (sin((static_cast<T>(1) - a) * angle) * x + sin(a * angle) * y) / sin(angle);
+			T cue_angle = acos(cosTheta);
+			return (sin((static_cast<T>(1) - a) * cue_angle) * x + sin(a * cue_angle) * y) / sin(cue_angle);
 		}
 	}
 
@@ -67,8 +67,8 @@ namespace glm
 		else
 		{
 			// Essential Mathematics, page 467
-			T angle = acos(cosTheta);
-			return (sin((static_cast<T>(1) - a) * angle) * x + sin(a * angle) * z) / sin(angle);
+			T cue_angle = acos(cosTheta);
+			return (sin((static_cast<T>(1) - a) * cue_angle) * x + sin(a * cue_angle) * z) / sin(cue_angle);
 		}
 	}
 

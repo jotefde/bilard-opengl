@@ -2,6 +2,8 @@
 
 Mesh* Table::_mesh = nullptr;
 ShaderProgram* Table::_shader = nullptr;
+float Table::frictionCoeff = 0.0f;
+glm::vec2 Table::bounds = glm::vec2(6.3f, 11.6f);
 
 Mesh* Table::GetMesh()
 {
@@ -19,8 +21,9 @@ ShaderProgram* Table::GetShader()
 	return _shader;
 }
 
-Table::Table()
+Table::Table(float fcoeff)
 {
+	Table::frictionCoeff = fcoeff;
 }
 
 glm::mat4 Table::Render(glm::mat4 V, glm::mat4 P, glm::mat4 M)

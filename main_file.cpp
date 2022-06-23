@@ -19,7 +19,7 @@ Place, Fifth Floor, Boston, MA  02110 - 1301  USA
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_SWIZZLE
-
+#define FRAME_RATE 144
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -55,22 +55,44 @@ void error_callback(int error, const char* description) {
 	fputs(description, stderr);
 }
 
+void resetBalls() {
+	glm::vec2 newPos(0);
+	int row = 1,
+		col = 1;
+	balls[0]->position = glm::vec2(0, 6.0f);
+	balls[0]->speed = glm::vec2(0);
+	for (int i = 1; i <= 15; i++)
+	{
+		float spacing = 0.1f * col;
+		newPos.y = -row;
+		newPos.x = (-float(row - 1) / 2.0f + col) - 1.0f + spacing / 2;
+		balls[i]->position = newPos;
+		balls[i]->speed = glm::vec2(0);
+		if (col == row)
+		{
+			row++;
+			col = 0;
+		}
+		col++;
+	}
+}
+
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	if (action == GLFW_PRESS) {
 		if (key == GLFW_KEY_SPACE) {
-			balls[0]->position = glm::vec3(0);
-			balls[0]->speed = glm::vec2(0);
+			resetBalls();
 		}
 		if (key == GLFW_KEY_LEFT) speed_x = -PI / 2;
 		if (key == GLFW_KEY_RIGHT) speed_x = PI / 2;
 		if (key == GLFW_KEY_UP) speed_y = PI / 2;
 		if (key == GLFW_KEY_DOWN) speed_y = -PI / 2;
-		if (key == GLFW_KEY_A) {
-			cue_speed = PI / 2;
-		}
+		if (key == GLFW_KEY_A) cue_speed = PI / 2;
+		if (key == GLFW_KEY_D) cue_speed = -PI / 2;
 		if (key == GLFW_KEY_S) {
-			balls[0]->acceleration = glm::vec2(cosf(cue_angle) * 0.1f, sinf(cue_angle) * 0.1f);
+			balls[0]->acceleration = glm::vec2(cosf(cue_angle) * 1.0f, sinf(cue_angle) * 1.0f);
 		}
+		if (key == GLFW_KEY_Q) Ball::radius += +0.05f;
+		if (key == GLFW_KEY_Z) Ball::radius += -0.05f;
 	}
 	if (action == GLFW_RELEASE) {
 		if (key == GLFW_KEY_LEFT) speed_x = 0;
@@ -164,21 +186,9 @@ void draw3Daxis() {
 	glFlush();
 }
 
-//void drawCueArrow() {
-//	glClearStencil(GL_STENCIL_CLEAR_VALUE);
-//	glColor3f(1.0, 0.0, 0.0);
-//	glBegin(GL_LINES);
-//
-//	glVertex3f(balls[0]->position.x, balls[0]->position.y, 0.0f);
-//	glVertex3f(balls[0]->position.x + cosf(cue_angle) * 3.0f, balls[0]->position.y + sinf(cue_angle) * 3.0f, 0.0f);
-//
-//	glEnd();
-//	glFlush();
-//}
-
-
 //Procedura inicjująca
 void initOpenGLProgram(GLFWwindow* window) {
+
 	//************Tutaj umieszczaj kod, który należy wykonać raz, na początku programu************
 	glClearColor(0, 0, 0, 1);
 	glEnable(GL_DEPTH_TEST);
@@ -194,7 +204,7 @@ void initOpenGLProgram(GLFWwindow* window) {
 	Table::GetMesh();
 	Ball::GetMesh();
 
-	table = new Table();
+	table = new Table(0.995f);
 	cue = new Cue(0, 0);
 	balls.push_back(new Ball(0, 6.0f));
 
@@ -226,47 +236,67 @@ void freeOpenGLProgram(GLFWwindow* window) {
 }
 
 //Procedura rysująca zawartość sceny
-void drawScene(GLFWwindow* window, float angle_x, float angle_y) {
-	//************Tutaj umieszczaj kod rysujący obraz******************l
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	float distance = 20.0f;
-
-	float camX = distance * -sinf(angle_x * PI / 4) * cosf(angle_y*PI / 4);
-	float camY = distance * -sinf(angle_y*PI / 4);
-	float camZ = -distance * cosf(angle_x*PI / 4) * cosf(angle_y*PI / 4);
-
-	glm::mat4 V = glm::lookAt(
-		glm::vec3(camX, camY, camZ + speed_z),
-		glm::vec3(0, 0, 0),
-		glm::vec3(0.0f, 1.0f, 0.0f)); //Wylicz macierz widoku
-
-	glm::mat4 P = glm::perspective(50.0f * PI / 180.0f, aspectRatio, 0.01f, 50.0f); //Wylicz macierz rzutowania
-
-	glm::mat4 M = glm::mat4(1.0f);
-
-	//M = glm::rotate(M, angle_x, glm::vec3(0, 1.0f, 0)); //Wylicz macierz modelu
-	//M = glm::rotate(M, angle_y, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
-	glColor3f(0.0, 1.0, 0.0);
-	glm::mat4 tableM = table->Render(V, P, M);
-
-
-
+void drawScene(GLFWwindow* window, float angle_x, float angle_y) 
+{
 	int time = glfwGetTime();
-	int frame = 1000 / 30;
-	cue->Render(V, P, M);
-	cue->position = balls[0]->position + glm::vec2(cosf(cue_angle),sinf(cue_angle));
-	for (Ball* ball : balls) {
-		if(time%frame == 0)
-			ball->update();
-		glm::mat4  ballM = ball->Render(V, P, M);
-	}
+	int frame = 1000 / FRAME_RATE;
 
-	draw3Daxis();
-	//drawCueArrow();
-	//cube(10.0f);
-	glUseProgram(0); // use default shader program
-	glfwSwapBuffers(window); //Przerzuć tylny bufor na przedni
+	if (time % frame == 0) {
+		//************Tutaj umieszczaj kod rysujący obraz******************l
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		float distance = 20.0f;
+
+		float camX = distance * -sinf(angle_x * PI / 4) * cosf(angle_y * PI / 4);
+		float camY = distance * -sinf(angle_y * PI / 4);
+		float camZ = -distance * cosf(angle_x * PI / 4) * cosf(angle_y * PI / 4);
+
+		glm::mat4 V = glm::lookAt(
+			glm::vec3(camX, camY, camZ + speed_z),
+			glm::vec3(0, 0, 0),
+			glm::vec3(0.0f, 1.0f, 0.0f)); //Wylicz macierz widoku
+
+		glm::mat4 P = glm::perspective(50.0f * PI / 180.0f, aspectRatio, 0.01f, 50.0f); //Wylicz macierz rzutowania
+		glm::mat4 M = glm::mat4(1.0f);
+
+		//M = glm::rotate(M, angle_x, glm::vec3(0, 1.0f, 0)); //Wylicz macierz modelu
+		//M = glm::rotate(M, angle_y, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
+		glColor3f(0.0, 1.0, 0.0);
+		glm::mat4 tableM = table->Render(V, P, M);
+
+
+		cue->cue_angle = cue_angle;
+		cue->Render(V, P, M);
+		cue->position = balls[0]->position + glm::vec2(cosf(cue_angle), sinf(cue_angle));
+
+		//calc collisions
+		for (int i = 0; i < balls.size();++i) {
+			for (int j = i + 1; j < balls.size(); ++j) {
+				if(balls[i]->collides(balls[j])) 
+					balls[i]->bounce(balls[j]);
+			}
+		}
+
+		//move
+		for (Ball* ball : balls) {
+			ball->update();
+			glm::mat4  ballM = ball->Render(V, P, M);
+
+		}
+
+		//reset collisions
+		for (int i = 0; i < balls.size(); ++i) {
+			for (int j = i + 1; j < balls.size(); ++j) {
+				if (!(balls[i]->collides(balls[j])))
+					balls[i]->collisionArray[balls[j]->id] = false;
+					balls[j]->collisionArray[balls[i]->id] = false;
+			}
+		}
+
+		//draw3Daxis();
+		glUseProgram(0); // use default shader program
+		glfwSwapBuffers(window); //Przerzuć tylny bufor na przedni
+	}
 }
 
 
@@ -312,7 +342,6 @@ int main(void)
 		angle_x += speed_x * glfwGetTime(); //Zwiększ/zmniejsz kąt obrotu na podstawie prędkości i czasu jaki upłynał od poprzedniej klatki
 		angle_y += speed_y * glfwGetTime(); //Zwiększ/zmniejsz kąt obrotu na podstawie prędkości i czasu jaki upłynał od poprzedniej klatki
 		cue_angle += cue_speed * glfwGetTime();
-		std::cout << cue_angle << std::endl;
 		glfwSetTime(0); //Zeruj timer
 		drawScene(window, angle_x, angle_y); //Wykonaj procedurę rysującą
 		glfwPollEvents(); //Wykonaj procedury callback w zalezności od zdarzeń jakie zaszły.

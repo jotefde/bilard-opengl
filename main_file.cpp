@@ -61,6 +61,7 @@ void resetBalls() {
 		col = 1;
 	balls[0]->position = glm::vec2(0, 6.0f);
 	balls[0]->speed = glm::vec2(0);
+	balls[0]->visible = true;
 	for (int i = 1; i <= 15; i++)
 	{
 		float spacing = 0.1f * col;
@@ -68,6 +69,7 @@ void resetBalls() {
 		newPos.x = (-float(row - 1) / 2.0f + col) - 1.0f + spacing / 2;
 		balls[i]->position = newPos;
 		balls[i]->speed = glm::vec2(0);
+		balls[i]->visible = true;
 		if (col == row)
 		{
 			row++;
@@ -89,7 +91,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		if (key == GLFW_KEY_A) cue_speed = PI / 2;
 		if (key == GLFW_KEY_D) cue_speed = -PI / 2;
 		if (key == GLFW_KEY_S) {
-			balls[0]->acceleration = glm::vec2(cosf(cue_angle) * 1.0f, sinf(cue_angle) * 1.0f);
+			balls[0]->acceleration = glm::vec2(cosf(cue_angle) * 0.7f, sinf(cue_angle) * 0.7f);
 		}
 		if (key == GLFW_KEY_Q) Ball::radius += +0.05f;
 		if (key == GLFW_KEY_Z) Ball::radius += -0.05f;
@@ -100,6 +102,20 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		if (key == GLFW_KEY_UP) speed_y = 0;
 		if (key == GLFW_KEY_DOWN) speed_y = 0;
 		if (key == GLFW_KEY_A) cue_speed = 0;
+		std::cout << cue_angle << std::endl;
+	}
+}
+
+void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+{
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+	{
+		double xpos, ypos;
+		glfwGetCursorPos(window, &xpos, &ypos);
+		xpos = ((xpos - 640) / 160) * 6.3f;
+		ypos = (-(ypos - 360) / 300) * 11.75f;
+		balls[0]->position = glm::vec2(xpos, ypos);
+		balls[0]->speed = glm::vec2(0);
 	}
 }
 
@@ -195,6 +211,7 @@ void initOpenGLProgram(GLFWwindow* window) {
 	glfwSetWindowSizeCallback(window, windowResizeCallback);
 	glfwSetKeyCallback(window, keyCallback);
 	glfwSetScrollCallback(window, scrollCallback);
+	glfwSetMouseButtonCallback(window, mouseButtonCallback);
 
 	Table::GetShader();
 	Ball::GetShader();
@@ -243,8 +260,7 @@ void drawScene(GLFWwindow* window, float angle_x, float angle_y)
 
 	if (time % frame == 0) {
 		//************Tutaj umieszczaj kod rysujący obraz******************l
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);\
 		float distance = 20.0f;
 
 		float camX = distance * -sinf(angle_x * PI / 4) * cosf(angle_y * PI / 4);
@@ -266,8 +282,8 @@ void drawScene(GLFWwindow* window, float angle_x, float angle_y)
 
 
 		cue->cue_angle = cue_angle;
+		cue->position = balls[0]->position - glm::vec2(cosf(cue_angle), sinf(cue_angle));;
 		cue->Render(V, P, M);
-		cue->position = balls[0]->position + glm::vec2(cosf(cue_angle), sinf(cue_angle));
 
 		//calc collisions
 		for (int i = 0; i < balls.size();++i) {
@@ -279,6 +295,8 @@ void drawScene(GLFWwindow* window, float angle_x, float angle_y)
 
 		//move
 		for (Ball* ball : balls) {
+			if (ball->visible == false)
+				continue;
 			ball->update();
 			glm::mat4  ballM = ball->Render(V, P, M);
 
@@ -286,6 +304,12 @@ void drawScene(GLFWwindow* window, float angle_x, float angle_y)
 
 		//reset collisions
 		for (int i = 0; i < balls.size(); ++i) {
+			if(abs(balls[i]->position.x) + Ball::radius < Table::bounds.x 
+				&& abs(balls[i]->position.y) + Ball::radius < Table::bounds.y)
+			{
+				balls[i]->borderCollision = false;
+			}
+
 			for (int j = i + 1; j < balls.size(); ++j) {
 				if (!(balls[i]->collides(balls[j])))
 					balls[i]->collisionArray[balls[j]->id] = false;

@@ -1,5 +1,6 @@
 #include "ball.h"
 #include "table.h"
+#include <cmath>
 
 Mesh* Ball::_mesh = nullptr;
 ShaderProgram* Ball::_shader = nullptr;
@@ -99,20 +100,79 @@ void Ball::update()
 	this->speed += this->acceleration;
 
 	this->position += this->speed;
+
+	float boundX = Table::bounds.x,
+		boundY = Table::bounds.y;
 	
-	if (this->position.x + Ball::radius > Table::bounds.x || this->position.x - Ball::radius < -(Table::bounds.x)) {
-		this->position.x = (this->position.x > 0) ? (Table::bounds.x - Ball::radius) : ( - (Table::bounds.x) + Ball::radius);
-		this->speed.x *= -0.7f;
+	float ballYAbs = abs(this->position.y) + Ball::radius,
+		ballXAbs = abs(this->position.x) + Ball::radius;
+
+	// left and right border bounce
+	if (ballXAbs >= boundX // is on the border
+		&& (ballYAbs <= boundY - Table::hole_bound) // is in Y range of border
+		&& !(ballYAbs < Table::hole_bound) // and not in Y range of central hole
+		) 
+	{
+
+		// oblique line of central hole
+		// a = 1/2
+		// b = Table::hole_bound - boundX/2
+
+		/*if (ballXAbs > boundX
+			&& (ballYAbs <= ballXAbs/2 + Table::hole_bound - boundX/2)
+			)
+		{
+			this->speed.y = Table::bounce_factor;
+		}*/
+		if (this->borderCollision == false)
+		{
+			this->borderCollision = true;
+			this->speed.x *= Table::bounce_factor;
+		}
 	}
-	if (this->position.y + Ball::radius > Table::bounds.y || this->position.y - Ball::radius < -(Table::bounds.y)) {
-		this->position.y = (this->position.y > 0) ? (Table::bounds.y - Ball::radius) : (- (Table::bounds.y) + Ball::radius);
-		this->speed.y *= -0.7f;
+
+	// top and bottom border bounce
+	if (ballYAbs >= boundY && ballXAbs <= boundX - Table::hole_bound)
+	{
+		if (this->borderCollision == false)
+		{
+			this->borderCollision = true;
+			this->speed.y *= Table::bounce_factor;
+		}
 	}
+
+	// central holes bounce
+	/*if (ballXAbs >= boundX + Table::hole_bound && ballYAbs < Table::hole_bound)
+	{
+		this->speed.x *= Table::bounce_factor;
+	}*/
+
+	// top holes point
+	if(this->position.y >= -this->position.x + boundY + boundX - Table::hole_bound
+		|| this->position.y >= this->position.x + boundY + boundX - Table::hole_bound)
+	{
+		this->visible = false;
+	}
+
+	// bottom holes point
+	if (this->position.y <= -this->position.x - boundY - boundX + Table::hole_bound
+		|| this->position.y <= this->position.x - boundY - boundX + Table::hole_bound)
+	{
+		this->visible = false;
+	}
+
+	// central holes point
+	if (ballXAbs > boundX + Table::hole_bound/2 && ballYAbs < Table::hole_bound)
+	{
+		this->visible = false;
+	}
+
 	//angle of rotation
 	this->angle -= glm::length(this->speed);
 	
 	//rotation
-	if (this->speed.x == 0 && this->speed.y == 0) this->dir = 0;
+	if (this->speed.x == 0 && this->speed.y == 0)
+		this->dir = 0;
 	else if (this->speed.x == 0) {
 		if (this->speed.y > 0)
 			this->dir = PI / 2;

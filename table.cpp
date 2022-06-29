@@ -3,7 +3,9 @@
 Mesh* Table::_mesh = nullptr;
 ShaderProgram* Table::_shader = nullptr;
 float Table::frictionCoeff = 0.0f;
-glm::vec2 Table::bounds = glm::vec2(6.3f, 11.6f);
+float Table::hole_bound = 0.7f;
+float Table::bounce_factor = -0.7f;
+glm::vec2 Table::bounds = glm::vec2(6.3f, 11.75f);
 
 Mesh* Table::GetMesh()
 {
@@ -52,5 +54,106 @@ glm::mat4 Table::Render(glm::mat4 V, glm::mat4 P, glm::mat4 M)
 	glDisableVertexAttribArray(sp->a("vertex"));
 	glDisableVertexAttribArray(sp->a("normal"));
 	glDisableVertexAttribArray(sp->a("texCoord0"));
+
+	this->DrawBounds();
 	return M;
+}
+
+void Table::DrawBounds()
+{
+	glBegin(GL_LINES);
+
+	float x = Table::bounds.x,
+		y = Table::bounds.y;
+
+
+	// left top conrner (-x, y)
+	glVertex3f(-x, y - Table::hole_bound, 0.0f);
+	glVertex3f(-x - Table::hole_bound, y, 0.0f);
+
+	glVertex3f(-x - Table::hole_bound, y, 0.0f);
+	glVertex3f(-x, y + Table::hole_bound, 0.0f);
+
+	glVertex3f(-x, y + Table::hole_bound, 0.0f);
+	glVertex3f(-x + Table::hole_bound, y, 0.0f);
+
+	// top border (*, y)
+	glVertex3f(-x + Table::hole_bound, y, 0.0f);
+	glVertex3f(x - Table::hole_bound, y, 0.0f);
+
+	// top right corner (x, y)
+	glVertex3f(x - Table::hole_bound, y, 0.0f);
+	glVertex3f(x, y + Table::hole_bound, 0.0f);
+
+	glVertex3f(x, y + Table::hole_bound, 0.0f);
+	glVertex3f(x + Table::hole_bound, y, 0.0f);
+
+	glVertex3f(x + Table::hole_bound, y, 0.0f);
+	glVertex3f(x, y - Table::hole_bound, 0.0f);
+
+	// right top border (x, y)
+	glVertex3f(x, y - Table::hole_bound, 0.0f);
+	glVertex3f(x, Table::hole_bound, 0.0f);
+
+	// center right corner (x, 0)
+	glVertex3f(x, Table::hole_bound, 0.0f);
+	glVertex3f(x + Table::hole_bound, Table::hole_bound/2, 0.0f);
+
+	glVertex3f(x + Table::hole_bound, Table::hole_bound / 2, 0.0f);
+	glVertex3f(x + Table::hole_bound, -Table::hole_bound / 2, 0.0f);
+
+	glVertex3f(x + Table::hole_bound, -Table::hole_bound / 2, 0.0f);
+	glVertex3f(x, -Table::hole_bound, 0.0f);
+
+	// right bottom border (x, -y)
+	glVertex3f(x, -Table::hole_bound, 0.0f);
+	glVertex3f(x, -y + Table::hole_bound, 0.0f);
+
+	// bottom right corner (x, -y)
+	glVertex3f(x, -y + Table::hole_bound, 0.0f);
+	glVertex3f(x + Table::hole_bound, -y, 0.0f);
+
+	glVertex3f(x + Table::hole_bound, -y, 0.0f);
+	glVertex3f(x, -y - Table::hole_bound, 0.0f);
+
+	glVertex3f(x, -y - Table::hole_bound, 0.0f);
+	glVertex3f(x - Table::hole_bound, -y, 0.0f);
+
+	// bottom border (*, -y)
+	glVertex3f(x - Table::hole_bound, -y, 0.0f);
+	glVertex3f(-x + Table::hole_bound, -y, 0.0f);
+
+	//bottom left corner (-x, -y)
+	glVertex3f(-x + Table::hole_bound, -y, 0.0f);
+	glVertex3f(-x, -y - Table::hole_bound, 0.0f);
+
+	glVertex3f(-x, -y - Table::hole_bound, 0.0f);
+	glVertex3f(-x - Table::hole_bound, -y, 0.0f);
+
+	glVertex3f(-x - Table::hole_bound, -y, 0.0f);
+	glVertex3f(-x, -y + Table::hole_bound, 0.0f);
+
+	//left bottom border (-x, 0)
+	glVertex3f(-x, -y + Table::hole_bound, 0.0f);
+	glVertex3f(-x, -Table::hole_bound, 0.0f);
+
+	// center left corner (-x, 0)
+	glVertex3f(-x, -Table::hole_bound, 0.0f);
+	glVertex3f(-x -Table::hole_bound, -Table::hole_bound/2, 0.0f);
+
+	glVertex3f(-x -Table::hole_bound, -Table::hole_bound/2, 0.0f);
+	glVertex3f(-x -Table::hole_bound, Table::hole_bound/2, 0.0f);
+
+	glVertex3f(-x -Table::hole_bound, Table::hole_bound/2, 0.0f);
+	glVertex3f(-x, Table::hole_bound, 0.0f);
+
+	//left top border (-x, *)
+	glVertex3f(-x, Table::hole_bound, 0.0f);
+	glVertex3f(-x, y -Table::hole_bound, 0.0f);
+
+
+	//glVertex3f(balls[0]->position.x + cosf(cue_angle) * 3.0f, balls[0]->position.y + sinf(cue_angle) * 3.0f, 0.0f);
+
+	glEnd();
+	glFlush();
 }

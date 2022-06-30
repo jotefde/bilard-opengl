@@ -6,11 +6,13 @@ float Table::frictionCoeff = 0.0f;
 float Table::hole_bound = 0.7f;
 float Table::bounce_factor = -0.7f;
 glm::vec2 Table::bounds = glm::vec2(6.3f, 11.75f);
+GLuint Table::field_texture = 0;
+GLuint Table::table_texture = 0;
 
 Mesh* Table::GetMesh()
 {
 	if (!_mesh) {
-		_mesh = new Mesh("stol.fbx");
+		_mesh = new Mesh("table.obj");
 	}
 	return _mesh;
 }
@@ -30,12 +32,13 @@ Table::Table(float fcoeff)
 
 glm::mat4 Table::Render(glm::mat4 V, glm::mat4 P, glm::mat4 M)
 {
-	M = glm::translate(M, glm::vec3(0, 0, -0.1f));
+	M = glm::translate(M, glm::vec3(0, 0, -0.2f));
 	ShaderProgram* sp = Table::GetShader();
 	Mesh* mesh = Table::GetMesh();
 	sp->use();
 
 	glUniform4fv(sp->u("color"), 1, glm::value_ptr(this->color));
+	glUniform4f(sp->u("lightDir"), 1.0f, 1.0f, 1.0f, 0.0f);
 	glUniformMatrix4fv(sp->u("V"), 1, false, glm::value_ptr(V));
 	glUniformMatrix4fv(sp->u("P"), 1, false, glm::value_ptr(P));
 	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(M));
@@ -46,16 +49,21 @@ glm::mat4 Table::Render(glm::mat4 V, glm::mat4 P, glm::mat4 M)
 	glEnableVertexAttribArray(sp->a("normal"));
 	glVertexAttribPointer(sp->a("normal"), 4, GL_FLOAT, false, 0, mesh->normals.data());
 
-	glEnableVertexAttribArray(sp->a("texCoord0"));
-	glVertexAttribPointer(sp->a("texCoord0"), 2, GL_FLOAT, false, 0, mesh->texCoords.data());
+	glEnableVertexAttribArray(sp->a("texCoord"));
+	glm::vec2* texCoords0 = mesh->texCoords[0].data();
+	glVertexAttribPointer(sp->a("texCoord"), 2, GL_FLOAT, false, 0, texCoords0);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, Table::field_texture);
+	glUniform1i(sp->u("fieldTexture"), 0);
 
 	glDrawElements(GL_TRIANGLES, mesh->indices.size(), GL_UNSIGNED_INT, mesh->indices.data());
 
 	glDisableVertexAttribArray(sp->a("vertex"));
 	glDisableVertexAttribArray(sp->a("normal"));
-	glDisableVertexAttribArray(sp->a("texCoord0"));
+	glDisableVertexAttribArray(sp->a("texCoord"));
 
-	this->DrawBounds();
+	//this->DrawBounds();
 	return M;
 }
 

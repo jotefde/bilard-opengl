@@ -1,11 +1,13 @@
 #version 330
 
+uniform sampler2D fieldTexture;
 
-out vec4 pixelColor; //Zmienna wyjsciowa fragment shadera. Zapisuje sie do niej ostateczny (prawie) kolor piksela
+layout(location=0) out vec4 pixelColor;
 
-//Zmienne interpolowane
-in vec4 i_color;
+in vec2 i_tc;
+in float i_nl;
 
 void main(void) {
-	pixelColor=i_color;
+	vec4 color=texture(fieldTexture, i_tc);
+	pixelColor=vec4(color.rgb*i_nl,color.a);
 }

@@ -15,17 +15,19 @@ public:
 	int id;
 	bool borderCollision = false;
 	std::vector<int> collisionArray;
-	static const glm::vec4 colors[15];
+	std::vector<glm::vec2> texCoords;
+	bool isMoving = false;
 	static float radius;
 	static int iterator;
+	static GLuint texture;
 	static Mesh* GetMesh();
 	static ShaderProgram* GetShader();
 
-	Ball(float, float);
 	Ball(glm::vec2);
 	glm::mat4 Render(glm::mat4, glm::mat4, glm::mat4);
 
 	void move(float x, float y);
+	void stop();
 	void update();
 	bool collides(Ball* colBall);
 	void bounce(Ball* colBall);

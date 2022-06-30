@@ -1,34 +1,18 @@
 #include "ball.h"
 #include "table.h"
 #include <cmath>
+#include <vector>
 
 Mesh* Ball::_mesh = nullptr;
 ShaderProgram* Ball::_shader = nullptr;
 float Ball::radius = 0.5f;
 int Ball::iterator = 0;
-
-const glm::vec4 Ball::colors[15] = {
-		glm::vec4(1.0f, 1.0f, 0, 1),
-		glm::vec4(0.0f, 0.0f, 1.0f, 1),
-		glm::vec4(0.85f, 0.45f, 0.1f, 1),
-		glm::vec4(0.3f, 0.0f, 0.55f, 1),
-		glm::vec4(0.0f, 0.0f, 0.0f, 1),
-		glm::vec4(0.88f, 0.65f, 0.4f, 1),
-		glm::vec4(0.1f, 0.45f, 0.0f, 1),
-		glm::vec4(0.7f, 0.0f, 0.05f, 1),
-		glm::vec4(1.0f, 1.0f, 0, 1),
-		glm::vec4(0.0f, 0.0f, 1.0f, 1),
-		glm::vec4(0.85f, 0.45f, 0.1f, 1),
-		glm::vec4(0.3f, 0.0f, 0.55f, 1),
-		glm::vec4(0.88f, 0.65f, 0.4f, 1),
-		glm::vec4(0.1f, 0.45f, 0.0f, 1),
-		glm::vec4(0.7f, 0.0f, 0.05f, 1),
-};
+GLuint Ball::texture = 0;
 
 Mesh* Ball::GetMesh()
 {
 	if (!_mesh) {
-		_mesh = new Mesh("ball.fbx");
+		_mesh = new Mesh("ball.obj");
 	}
 	return _mesh;
 }
@@ -41,22 +25,23 @@ ShaderProgram* Ball::GetShader()
 	return _shader;
 }
 
-Ball::Ball(float x = 0, float y = 0)
-{
-	position = glm::vec2(x, y);
-	this->id = Ball::iterator++;
-	for (int i = 0; i < 16; ++i) {
-		this->collisionArray.push_back(false);
-	}
-}
-
 Ball::Ball(glm::vec2 pos)
 {
-	position = pos;
+	this->position = pos;
 	this->id = Ball::iterator++;
 	for (int i = 0; i < 16; ++i) {
 		this->collisionArray.push_back(false);
 	}
+
+
+	float texH = 324.0f / 5184.0f;
+	std::vector<glm::vec2> _texCoords = Ball::GetMesh()->texCoords[0];
+	for (auto& row : _texCoords)
+	{
+		row.y /= 15.0f;
+		row.y += this->id * texH;
+	}
+	this->texCoords = _texCoords;
 }
 
 glm::mat4 Ball::Render(glm::mat4 V, glm::mat4 P, glm::mat4 M)
@@ -67,7 +52,7 @@ glm::mat4 Ball::Render(glm::mat4 V, glm::mat4 P, glm::mat4 M)
 	ShaderProgram* sp = Ball::GetShader();
 	Mesh* mesh = Ball::GetMesh();
 	sp->use();
-
+	glShadeModel(GL_SMOOTH);
 	glUniform4fv(sp->u("color"), 1, glm::value_ptr(this->color));
 	glUniformMatrix4fv(sp->u("V"), 1, false, glm::value_ptr(V));
 	glUniformMatrix4fv(sp->u("P"), 1, false, glm::value_ptr(P));
@@ -79,20 +64,29 @@ glm::mat4 Ball::Render(glm::mat4 V, glm::mat4 P, glm::mat4 M)
 	glEnableVertexAttribArray(sp->a("normal"));
 	glVertexAttribPointer(sp->a("normal"), 4, GL_FLOAT, false, 0, mesh->normals.data());
 
-	glEnableVertexAttribArray(sp->a("texCoord0"));
-	glVertexAttribPointer(sp->a("texCoord0"), 2, GL_FLOAT, false, 0, mesh->texCoords.data());
+	glEnableVertexAttribArray(sp->a("texCoord"));
+	glVertexAttribPointer(sp->a("texCoord"), 2, GL_FLOAT, false, 0, this->texCoords.data());
 
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, Ball::texture);
+	glUniform1i(sp->u("tex"), 0);
 	glDrawElements(GL_TRIANGLES, mesh->indices.size(), GL_UNSIGNED_INT, mesh->indices.data());
 
 	glDisableVertexAttribArray(sp->a("vertex"));
 	glDisableVertexAttribArray(sp->a("normal"));
-	glDisableVertexAttribArray(sp->a("texCoord0"));
+	glDisableVertexAttribArray(sp->a("texCoord"));
 	return M;
 }
 
 void Ball::move(float x, float y)
 {
 	this->acceleration += glm::vec2(x,y);
+}
+
+void Ball::stop()
+{
+	this->speed = glm::vec2(0);
+	this->isMoving = false;
 }
 
 void Ball::update()
@@ -152,6 +146,7 @@ void Ball::update()
 		|| this->position.y >= this->position.x + boundY + boundX - Table::hole_bound)
 	{
 		this->visible = false;
+		this->stop();
 	}
 
 	// bottom holes point
@@ -159,12 +154,14 @@ void Ball::update()
 		|| this->position.y <= this->position.x - boundY - boundX + Table::hole_bound)
 	{
 		this->visible = false;
+		this->stop();
 	}
 
 	// central holes point
 	if (ballXAbs > boundX + Table::hole_bound/2 && ballYAbs < Table::hole_bound)
 	{
 		this->visible = false;
+		this->stop();
 	}
 
 	//angle of rotation
@@ -192,12 +189,15 @@ void Ball::update()
 
 	//to not compute too much
 	if (glm::length(this->speed) < 0.0001)
-		this->speed = glm::vec2(0);
+		this->stop();
+	else
+		this->isMoving = true;
 }
 
 bool Ball::collides(Ball* colBall)
 {
-	if (glm::distance(this->position, colBall->position) <= Ball::radius * 2) return true;
+	if (glm::distance(this->position, colBall->position) <= Ball::radius * 2)
+		return true;
 
 	return false;
 }

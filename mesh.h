@@ -22,7 +22,7 @@ class Mesh
 public:
 	std::vector<glm::vec4> vertices;
 	std::vector<glm::vec4> normals;
-	std::vector<glm::vec2> texCoords;
+	std::vector < std::vector<glm::vec2>> texCoords;
 	std::vector<glm::vec4> colors;
 	std::vector<unsigned int> indices;
 

@@ -13,6 +13,8 @@ public:
 	static glm::vec2 bounds;
 	static float hole_bound;
 	static float bounce_factor;
+	static GLuint field_texture;
+	static GLuint table_texture;
 	Table(float);
 	glm::mat4 Render(glm::mat4 V, glm::mat4 P, glm::mat4 M);
 	void DrawBounds();

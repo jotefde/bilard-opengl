@@ -1,4 +1,5 @@
 #include "cue.h"
+#include "ball.h"
 
 Mesh* Cue::_mesh = nullptr;
 ShaderProgram* Cue::_shader = nullptr;
@@ -33,9 +34,9 @@ Cue::Cue(glm::vec2 pos)
 
 glm::mat4 Cue::Render(glm::mat4 V, glm::mat4 P, glm::mat4 M)
 {
-	//M = glm::rotate(M, PI, glm::vec3(0, 0, 1.0f));
-	M = glm::translate(M, glm::vec3(this->position, 0));
+	M = glm::translate(M, glm::vec3(this->position, 0.0f));
 	M = glm::rotate(M, cue_angle + PI/2, glm::vec3(0, 0, 1.0f));
+	M = glm::rotate(M, PI / 10, glm::vec3(1.0f, 0, 0));
 
 	ShaderProgram* sp = Cue::GetShader();
 	Mesh* mesh = Cue::GetMesh();
@@ -43,6 +44,7 @@ glm::mat4 Cue::Render(glm::mat4 V, glm::mat4 P, glm::mat4 M)
 	sp->use();
 
 	glUniform4f(sp->u("color"), 0.0f, 0.5f, 1.0f, 1.0f);
+	glUniform4f(sp->u("lightDir"), 1.0f, 1.0f, 1.0f, 0.0f);
 	glUniformMatrix4fv(sp->u("V"), 1, false, glm::value_ptr(V));
 	glUniformMatrix4fv(sp->u("P"), 1, false, glm::value_ptr(P));
 	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(M));

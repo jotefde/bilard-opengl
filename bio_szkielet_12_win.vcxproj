@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ball.h" />
+    <ClInclude Include="camera.h" />
     <ClInclude Include="constants.h" />
     <ClInclude Include="cue.h" />
     <ClInclude Include="lodepng.h" />
@@ -30,6 +31,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ball.cpp" />
+    <ClCompile Include="camera.cpp" />
     <ClCompile Include="cue.cpp" />
     <ClCompile Include="lodepng.cpp" />
     <ClCompile Include="main_file.cpp" />
@@ -39,8 +41,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="f_ball.glsl" />
+    <None Include="f_cue.glsl" />
     <None Include="f_table.glsl" />
     <None Include="v_ball.glsl" />
+    <None Include="v_cue.glsl" />
     <None Include="v_table.glsl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
